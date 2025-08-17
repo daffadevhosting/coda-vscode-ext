@@ -1,69 +1,92 @@
 // src/extension.ts
-
 import * as vscode from 'vscode';
-import { askCoDa, ChatMessage } from './coda-ai';
-import { SidebarProvider } from './SidebarProvider'; // <-- Impor SidebarProvider
-
-// Riwayat obrolan akan disimpan di sini selama sesi berjalan
-let chatHistory: ChatMessage[] = [];
+import { askCoDa, ChatMessage, fixCodeWithCoDa } from './coda-ai';
+import { SidebarProvider } from './SidebarProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-
 	console.log('Congratulations, your extension "coda-vscode" is now active!');
 
-	// Buat instance dari SidebarProvider
 	const sidebarProvider = new SidebarProvider(context.extensionUri);
+
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider)
+		vscode.window.registerWebviewViewProvider(
+			SidebarProvider.viewType,
+			sidebarProvider
+		)
 	);
 
-	// Daftarkan perintah baru kita: coda-vscode.askCoDa
 	let askCoDaCommand = vscode.commands.registerCommand('coda-vscode.askCoDa', async (userMessage?: string) => {
-		
-		// Jika tidak ada pesan dari UI, minta input manual (untuk jaga-jaga)
+		if (!sidebarProvider.view) {
+			await vscode.commands.executeCommand('coda-vscode.chatView.focus');
+		} else {
+			sidebarProvider.view.show?.(true);
+		}
+
 		if (!userMessage) {
 			userMessage = await vscode.window.showInputBox({ prompt: "Ask CoDa..." });
 		}
 		if (!userMessage) return;
 
-
-		const config = vscode.workspace.getConfiguration('coda-vscode');
-		const apiKey = config.get<string>('apiKey');
+		const apiKey = vscode.workspace.getConfiguration('coda-vscode').get<string>('apiKey');
 
 		if (!apiKey) {
-			vscode.window.showErrorMessage(
-				'Gemini API Key is not set. Please set it in the VS Code settings.',
-				'Open Settings'
-			).then(selection => {
-				if (selection === 'Open Settings') {
-					vscode.commands.executeCommand('workbench.action.openSettings', 'coda-vscode.apiKey');
-				}
-			});
+			vscode.window.showErrorMessage('Gemini API Key is not set in settings.');
 			return;
 		}
 
-		// Kirim pesan "thinking" ke UI
+		// Langsung kirim pesan pengguna dan status "thinking" ke UI
+        sidebarProvider.postMessageToWebview({ type: 'addUserMessage', data: { role: 'user', text: userMessage } });
 		sidebarProvider.postMessageToWebview({ type: 'addMessage', data: { role: 'model', text: 'Thinking...' } });
 
-		// Panggil "otak" AI
-		const result = await askCoDa(apiKey, chatHistory, userMessage);
+		const result = await askCoDa(apiKey, [], userMessage); // History belum diimplementasikan
 
 		if (result.error) {
-			vscode.window.showErrorMessage(result.error);
-			// Kirim pesan error ke UI untuk menggantikan "Thinking..."
 			sidebarProvider.postMessageToWebview({ type: 'replaceLastMessage', data: { role: 'model', text: `Error: ${result.error}` } });
-
 		} else if (result.response) {
-			// Simpan riwayat
-			chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
-			chatHistory.push({ role: 'model', parts: [{ text: result.response }] });
-
-			// Kirim jawaban final ke UI untuk menggantikan "Thinking..."
 			sidebarProvider.postMessageToWebview({ type: 'replaceLastMessage', data: { role: 'model', text: result.response } });
 		}
 	});
+	// [BARU] Daftarkan perintah untuk memperbaiki error
+	let fixErrorCommand = vscode.commands.registerCommand('coda-vscode.fixError', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return; // Tidak ada editor yang aktif
+		}
 
-	context.subscriptions.push(askCoDaCommand);
+		const selection = editor.selection;
+		const selectedText = editor.document.getText(selection);
+
+		if (!selectedText) {
+			vscode.window.showInformationMessage('CoDa: Please select the code you want to fix.');
+			return;
+		}
+
+		const apiKey = vscode.workspace.getConfiguration('coda-vscode').get<string>('apiKey');
+		if (!apiKey) {
+			vscode.window.showErrorMessage('Gemini API Key is not set in settings.');
+			return;
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: "CoDa is fixing your code...",
+			cancellable: false
+		}, async (progress) => {
+			const result = await fixCodeWithCoDa(apiKey, selectedText);
+
+			if (result.error) {
+				vscode.window.showErrorMessage(`CoDa Error: ${result.error}`);
+			} else if (result.response) {
+				// Ganti teks yang diseleksi dengan hasil perbaikan dari AI
+				editor.edit(editBuilder => {
+					editBuilder.replace(selection, result.response!);
+				});
+				vscode.window.showInformationMessage('CoDa has fixed your code!');
+			}
+		});
+	});
+
+	context.subscriptions.push(askCoDaCommand, fixErrorCommand);
 }
 
 export function deactivate() {}

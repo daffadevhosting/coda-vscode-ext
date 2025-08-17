@@ -1,8 +1,9 @@
 // src/webview-ui/App.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-// Dapatkan instance API VS Code yang telah disediakan di window
 // @ts-ignore
 const vscode = acquireVsCodeApi();
 
@@ -11,8 +12,13 @@ interface Message {
     text: string;
 }
 
+const initialMessage: Message = {
+    role: 'model',
+    text: "👋 Halo! Saya CoDa, asisten AI Anda di VS Code.\n\nSaya di sini untuk membantu Anda:\n\n- **Menjawab pertanyaan** seputar coding & teknologi.\n- **Mencari bug** dalam potongan kode Anda.\n- **Memberikan ide** untuk proyek Anda.\n\nSilakan mulai dengan mengetik pesan di bawah ini."
+};
+
 function App() {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([initialMessage]);
     const [inputText, setInputText] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -22,19 +28,26 @@ function App() {
 
     useEffect(scrollToBottom, [messages]);
 
-    // Listener untuk menerima pesan dari backend ekstensi
-
     useEffect(() => {
-        const handleMessage = (event: any) => {
+        const handleMessage = (event: MessageEvent) => {
             const message = event.data;
             switch (message.type) {
+                case 'addUserMessage':
+                    if (messages.length === 1 && messages[0] === initialMessage) {
+                        setMessages([message.data]);
+                    } else {
+                        setMessages(prev => [...prev, message.data]);
+                    }
+                    break;
                 case 'addMessage':
-                    setMessages(prevMessages => [...prevMessages, message.data]);
+                    setMessages(prev => [...prev, message.data]);
                     break;
                 case 'replaceLastMessage':
-                    setMessages(prevMessages => {
-                        const newMessages = [...prevMessages];
-                        newMessages[newMessages.length - 1] = message.data;
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        if (newMessages.length > 0) {
+                            newMessages[newMessages.length - 1] = message.data;
+                        }
                         return newMessages;
                     });
                     break;
@@ -42,36 +55,27 @@ function App() {
         };
 
         window.addEventListener('message', handleMessage);
-
-        return () => {
-            window.removeEventListener('message', handleMessage);
-        };
-    }, []);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [messages]);
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
         if (inputText.trim()) {
-            // Kirim pesan ke backend ekstensi
-            vscode.postMessage({
-                type: 'askQuestion',
-                value: inputText
-            });
-            // Tambahkan pesan pengguna ke UI secara langsung
-            setMessages(prev => [...prev, { role: 'user', text: inputText }]);
+            vscode.postMessage({ type: 'askQuestion', value: inputText });
             setInputText('');
         }
     };
 
     return (
-        <div className="chat-container">
-            <div className="messages-list">
+        <main>
+            <section className="messages-list">
                 {messages.map((msg, index) => (
                     <div key={index} className={`message ${msg.role}`}>
-                        <p>{msg.text}</p>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
                     </div>
                 ))}
                 <div ref={messagesEndRef} />
-            </div>
+            </section>
             <form onSubmit={handleSendMessage} className="chat-input-form">
                 <input
                     type="text"
@@ -81,7 +85,7 @@ function App() {
                 />
                 <button type="submit">Send</button>
             </form>
-        </div>
+        </main>
     );
 }
 

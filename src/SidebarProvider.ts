@@ -5,41 +5,26 @@ import { getNonce } from './getNonce';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'coda-vscode.chatView';
-
     private _view?: vscode.WebviewView;
+	view: any;
 
     constructor(private readonly _extensionUri: vscode.Uri) {}
 
-    public resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
-        _token: vscode.CancellationToken
-    ) {
+    public resolveWebviewView(webviewView: vscode.WebviewView) {
         this._view = webviewView;
-
         webviewView.webview.options = {
-            // Izinkan skrip di dalam webview
             enableScripts: true,
             localResourceRoots: [this._extensionUri],
         };
-
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        // Tambahkan listener untuk pesan dari webview
         webviewView.webview.onDidReceiveMessage(data => {
-            switch (data.type) {
-                case 'askQuestion': {
-                    if (!data.value) {
-                        return;
-                    }
-                    vscode.commands.executeCommand('coda-vscode.askCoDa', data.value);
-                    break;
-                }
+            if (data.type === 'askQuestion') {
+                vscode.commands.executeCommand('coda-vscode.askCoDa', data.value);
             }
         });
     }
     
-    // Fungsi untuk mengirim pesan ke webview
     public postMessageToWebview(message: any) {
         if (this._view) {
             this._view.webview.postMessage(message);
@@ -47,11 +32,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
-        // Dapatkan URI untuk skrip dan stylesheet
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'out', 'webview.js'));
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
-
-        // Gunakan nonce untuk mengizinkan hanya skrip tertentu yang berjalan
         const nonce = getNonce();
 
         return `<!DOCTYPE html>

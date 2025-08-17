@@ -81,3 +81,42 @@ export async function askCoDa(apiKey: string, history: ChatMessage[], userMessag
     return { response: null, error: errorMessage };
   }
 }
+
+/**
+ * Fungsi khusus untuk memperbaiki blok kode.
+ * @param apiKey Kunci API Google Gemini Anda.
+ * @param codeToFix Blok kode yang akan diperbaiki.
+ * @returns Hanya blok kode yang sudah diperbaiki atau pesan error.
+ */
+export async function fixCodeWithCoDa(apiKey: string, codeToFix: string): Promise<AIResult> {
+    if (!apiKey) {
+        return { response: null, error: "API Key is missing." };
+    }
+
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        const prompt = `
+            You are an expert code debugger. Analyze the following code snippet, identify any errors (syntax or logical), and fix them.
+            IMPORTANT: Your response MUST ONLY be the corrected code block itself, without any explanation, intro, or markdown fences like \`\`\`.
+            
+            Code with error:
+            \`\`\`
+            ${codeToFix}
+            \`\`\`
+
+            Corrected code:
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
+
+        return { response: text, error: null };
+
+    } catch (e: any) {
+        console.error("CoDa Fix Error:", e);
+        return { response: null, error: e.message || "An unknown error occurred." };
+    }
+}
