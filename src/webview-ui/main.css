@@ -20,6 +20,20 @@ body {
     box-sizing: border-box;
 }
 
+.header-container {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--vscode-sideBar-border);
+}
+
+.header-title {
+    font-weight: 600;
+    font-size: 1.1em;
+    padding-left: 4px;
+}
+
 .messages-container {
     flex-grow: 1;
     overflow-y: auto;
@@ -77,15 +91,41 @@ body {
     margin-bottom: 0.5em;
 }
 
+.code-block-wrapper {
+    position: relative;
+    margin: 0.5em 0;
+}
+
 .message-content pre {
+    margin: 0 !important;
     background-color: var(--vscode-textBlockQuote-background);
     border: 1px solid var(--vscode-textBlockQuote-border);
-    padding: 12px;
+    padding: 8px !important;
     border-radius: 4px;
+    background-color: var(--vscode-textBlockQuote-background) !important;
+    border: 1px solid var(--vscode-textBlockQuote-border);
     font-family: var(--vscode-editor-font-family);
     font-size: var(--vscode-editor-font-size);
     line-height: 1.5;
     overflow-x: auto;
+}
+
+.copy-button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.code-block-wrapper:hover .copy-button {
+    opacity: 1;
+}
+
+.message-content > pre {
+    text-wrap: wrap;
+    display: none;
 }
 
 .message-content code {

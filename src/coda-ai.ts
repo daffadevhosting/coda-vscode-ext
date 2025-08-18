@@ -84,6 +84,7 @@ export async function askCoDa(apiKey: string, history: ChatMessage[], userMessag
   }
 }
 
+
 /**
  * [UPGRADED] Fungsi khusus untuk memperbaiki blok kode.
  * @param apiKey Kunci API Google Gemini Anda.
@@ -108,15 +109,42 @@ export async function fixCodeWithCoDa(apiKey: string, codeToFix: string, languag
             }
         });
 
+        // [PROMPT BARU YANG LEBIH BAIK]
         const prompt = `
-            You are an expert code debugger. Analyze the following ${languageId} code snippet.
-            Identify any errors (syntax or logical) and fix them.
+            You are an expert automated code-fixing assistant integrated into VS Code.
+            Your task is to analyze a code snippet that a user has highlighted because it has an error (a "red squiggle").
+            Your goal is to provide a corrected version of the code and a concise explanation.
 
-            Your response MUST be a valid JSON object with two properties:
-            1. \"fixedCode\": A string containing only the corrected code.
-            2. \"explanation\": A brief, one-sentence explanation of what was fixed.
+            **IMPORTANT INSTRUCTIONS:**
+            1.  **Analyze the Code**: Examine the following \`${languageId}\` code for syntax errors, logical flaws, or common mistakes that would cause a linter or compiler error.
+            2.  **Assume Context**: The user has only provided a snippet. You might need to infer missing imports, variables, or functions. Assume common libraries (like 'React' for jsx, 'os' for python, etc.) are available.
+            3.  **Generate Response**: Your response MUST be a single, valid JSON object. Do not include any text or markdown before or after the JSON object.
+            4.  **JSON Structure**: The JSON object must have two properties:
+                -   \`"fixedCode"\`: A string containing ONLY the corrected, complete code snippet. It should be a drop-in replacement for the user's selection.
+                -   \`"explanation"\`: A friendly and concise (1-2 sentences) explanation of the error and how you fixed it.
+            5.  **No Error Found**: If you analyze the code and cannot find any clear errors, set \`"fixedCode"\` to \`null\` and use the \`"explanation"\` to state that the code appears to be correct.
 
-            Code with error:
+            **EXAMPLE:**
+            -   **User's \`javascript\` code with error:**
+                \`\`\`javascript
+                function greet() {
+                  console.log("Hello, world!")
+                }
+                \`\`\`
+            -   **Your JSON Response:**
+                \`\`\`json
+                {
+                  "fixedCode": "function greet() {\\n  console.log(\\"Hello, world!\\");\\n}",
+                  "explanation": "I added the missing semicolon at the end of the console.log statement for code consistency."
+                }
+                \`\`\`
+
+            ---
+
+            **Analyze and fix the following code:**
+
+            **Language:** \`${languageId}\`
+            **Code with error:**
             \`\`\`${languageId}
             ${codeToFix}
             \`\`\`

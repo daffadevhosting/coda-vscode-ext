@@ -2,12 +2,14 @@
 
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
+import { ChatMessage } from './coda-ai'; // [BARU] Impor tipe ChatMessage
+
+const CHAT_HISTORY_KEY = 'coda-chat-history'; // [BARU] Pastikan key konsisten
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'coda-vscode.chatView';
 
     private _view?: vscode.WebviewView;
-    view: any;
 
     constructor(private readonly _context: vscode.ExtensionContext) {}
 
@@ -38,13 +40,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 case 'webviewReady': {
                     // Send the initial data once the webview is ready
                     this.sendModelData();
+                    // [BARU] Kirim history saat UI siap
+                    this.sendChatHistory();
                     break;
                 }
                 case 'askQuestion': {
-                    if (!data.value) {
+                    if (!data.value || !data.history) { // [MODIFIKASI] Pastikan history ada
                         return;
                     }
-                    vscode.commands.executeCommand('coda-vscode.askCoDa', data.value);
+                    // [MODIFIKASI] Kirim pesan dan history ke extension
+                    vscode.commands.executeCommand('coda-vscode.askCoDa', data.value, data.history);
                     break;
                 }
                 case 'setModel': {
@@ -54,15 +59,41 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     vscode.workspace.getConfiguration('coda-vscode').update('model', data.value, vscode.ConfigurationTarget.Global);
                     break;
                 }
+                 // [BARU] Perintah untuk membersihkan riwayat
+                case 'clearHistory': {
+                    this._context.workspaceState.update(CHAT_HISTORY_KEY, []);
+                    this.postMessageToWebview({ type: 'clearChat' }); // Beri tahu UI untuk membersihkan
+                    vscode.window.showInformationMessage("CoDa: Chat history has been cleared.");
+                    break;
+                }
             }
         });
     }
+
+    public get view(): vscode.WebviewView | undefined {
+        return this._view;
+    }
     
+    // [MODIFIKASI] Buat fungsi ini publik agar bisa diakses dari extension.ts
     public postMessageToWebview(message: any) {
         if (this._view) {
             this._view.webview.postMessage(message);
         }
     }
+
+    // [BARU] Fungsi untuk mengirim riwayat obrolan ke webview
+    public sendChatHistory() {
+        if (this._view) {
+            const history = this._context.workspaceState.get<ChatMessage[]>(CHAT_HISTORY_KEY) || [];
+            // Konversi format agar sesuai dengan yang diharapkan UI
+            const formattedHistory = history.map(msg => ({
+                role: msg.role,
+                text: msg.parts[0].text
+            }));
+            this.postMessageToWebview({ type: 'loadHistory', data: formattedHistory });
+        }
+    }
+
 
     public sendModelData() {
         if (this._view) {

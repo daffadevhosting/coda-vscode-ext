@@ -5,6 +5,8 @@ import { SidebarProvider } from './SidebarProvider';
 
 // Nama kunci untuk menyimpan API key di SecretStorage
 const API_KEY_SECRET_KEY = 'coda-gemini-api-key';
+// [BARU] Nama kunci untuk menyimpan riwayat obrolan
+const CHAT_HISTORY_KEY = 'coda-chat-history';
 
 // Fungsi helper untuk mendapatkan API key dari brankas
 async function getApiKey(secrets: vscode.SecretStorage): Promise<string | undefined> {
@@ -25,12 +27,12 @@ class CodaActionProvider implements vscode.CodeActionProvider {
         }
 
         const fixAction = new vscode.CodeAction('CoDa: Fix this code', vscode.CodeActionKind.QuickFix);
-        fixAction.command = { 
-            command: 'coda-vscode.fixError', 
-            title: 'Let CoDa fix this code', 
-            arguments: [document, range] 
+        fixAction.command = {
+            command: 'coda-vscode.fixError',
+            title: 'Let CoDa fix this code',
+            arguments: [document, range]
         };
-        
+
         return [fixAction];
     }
 }
@@ -90,41 +92,58 @@ export function activate(context: vscode.ExtensionContext) {
         return apiKey;
     };
 
-	// Perintah Ask CoDa di sidebar (tetap sama)
-	let askCoDaCommand = vscode.commands.registerCommand('coda-vscode.askCoDa', async (userMessage?: string) => {
-		if (!sidebarProvider.view) {
-			await vscode.commands.executeCommand('coda-vscode.chatView.focus');
-		} else {
-			sidebarProvider.view.show?.(true);
-		}
+    // [DIMODIFIKASI] Perintah Ask CoDa di sidebar
+    let askCoDaCommand = vscode.commands.registerCommand('coda-vscode.askCoDa', async (userMessage?: string, history?: ChatMessage[]) => {
+        if (!sidebarProvider.view) {
+            await vscode.commands.executeCommand('coda-vscode.chatView.focus');
+        } else {
+            sidebarProvider.view.show?.(true);
+        }
 
-		if (!userMessage) {
-			userMessage = await vscode.window.showInputBox({ prompt: "Ask CoDa..." });
-		}
-		if (!userMessage) return;
+        // Jika userMessage tidak diberikan dari webview, tampilkan input box
+        if (!userMessage) {
+            userMessage = await vscode.window.showInputBox({ prompt: "Ask CoDa..." });
+            if (!userMessage) return; // Batalkan jika tidak ada input
+             // Jika dipanggil dari input box, kirim pesan ke webview
+            sidebarProvider.postMessageToWebview({ type: 'addUserMessage', data: { role: 'user', text: userMessage } });
+        }
 
-		const apiKey = await ensureApiKey();
+        const apiKey = await ensureApiKey();
+        if (!apiKey) {
+            return; // API key tidak ada, hentikan eksekusi
+        }
 
-		if (!apiKey) {
-			vscode.window.showErrorMessage('Gemini API Key is not set in settings.');
-			return;
-		}
-        
         const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.5-flash';
 
-		// Langsung kirim pesan pengguna dan status "thinking" ke UI
-        sidebarProvider.postMessageToWebview({ type: 'addUserMessage', data: { role: 'user', text: userMessage } });
-		sidebarProvider.postMessageToWebview({ type: 'addMessage', data: { role: 'model', text: 'Thinking...' } });
+        // Tampilkan status "thinking..."
+        sidebarProvider.postMessageToWebview({ type: 'addMessage', data: { role: 'model', text: 'Thinking...' } });
 
-		const result = await askCoDa(apiKey, [], userMessage, modelName); // History belum diimplementasikan
+        // Dapatkan riwayat dari argumen atau dari state jika tidak ada
+        const currentHistory = history || context.workspaceState.get<ChatMessage[]>(CHAT_HISTORY_KEY) || [];
 
-		if (result.error) {
-			sidebarProvider.postMessageToWebview({ type: 'replaceLastMessage', data: { role: 'model', text: `Error: ${result.error}` } });
-		} else if (result.response) {
-			sidebarProvider.postMessageToWebview({ type: 'replaceLastMessage', data: { role: 'model', text: result.response } });
-		}
-	});
-	context.subscriptions.push(askCoDaCommand);
+        const result = await askCoDa(apiKey, currentHistory, userMessage, modelName);
+
+        // [BARU] Bentuk pesan balasan dari model
+        const modelResponse: ChatMessage = {
+            role: 'model',
+            parts: [{ text: result.response || `Error: ${result.error}` }]
+        };
+
+        // Ganti pesan "Thinking..." dengan respons dari AI
+        sidebarProvider.postMessageToWebview({
+            type: 'replaceLastMessage',
+            data: { role: 'model', text: modelResponse.parts[0].text }
+        });
+
+        // [BARU] Update dan simpan riwayat baru
+        if (!result.error) {
+            const userRequest: ChatMessage = { role: 'user', parts: [{ text: userMessage }] };
+            const newHistory = [...currentHistory, userRequest, modelResponse];
+            await context.workspaceState.update(CHAT_HISTORY_KEY, newHistory);
+        }
+    });
+
+    context.subscriptions.push(askCoDaCommand);
 
     // [UPGRADED] Perintah "fixError" yang dipanggil oleh Code Action
     let fixErrorCommand = vscode.commands.registerCommand('coda-vscode.fixError', async (document: vscode.TextDocument, range: vscode.Range) => {
@@ -133,7 +152,6 @@ export function activate(context: vscode.ExtensionContext) {
         const apiKey = await ensureApiKey();
 
         if (!apiKey) {
-            vscode.window.showErrorMessage('Gemini API Key is not set.');
             return;
         }
 
@@ -150,16 +168,15 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showErrorMessage(`CoDa Error: ${result.error}`);
             } else if (result.response) {
                 try {
-                    // Coba parse respons sebagai JSON. Mungkin gagal jika AI merespons dengan teks biasa.
                     const jsonResponse = JSON.parse(result.response);
                     const { fixedCode, explanation } = jsonResponse;
 
                     if (fixedCode) {
-                        const selectedText = document.getText(range);
-                        const diffDetail = `--- Original\n+++ CoDa's Fix\n@@\n-${selectedText.split('\n').join('\n-')}\n+${fixedCode.split('\n').join('\n+')}`;
+                        const originalText = document.getText(range);
+                        const diffDetail = `--- Original\n+++ CoDa's Fix\n@@\n-${originalText.split('\n').join('\n-')}\n+${fixedCode.split('\n').join('\n+')}`;
 
                         const selection = await vscode.window.showInformationMessage(
-                            explanation || "CoDa has a suggestion for you", 
+                            explanation || "CoDa has a suggestion for you",
                             {
                                 modal: true,
                                 detail: diffDetail
@@ -181,7 +198,6 @@ export function activate(context: vscode.ExtensionContext) {
                         vscode.window.showWarningMessage("CoDa did not provide a fix or an explanation.");
                     }
                 } catch (e) {
-                    // Jika parsing JSON gagal, anggap responsnya adalah penjelasan teks biasa dari AI.
                     vscode.window.showInformationMessage(`CoDa says: "${result.response}"`);
                 }
             }
@@ -191,4 +207,4 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(fixErrorCommand);
 }
 
-export function deactivate() {}
+export function deactivate() { }
