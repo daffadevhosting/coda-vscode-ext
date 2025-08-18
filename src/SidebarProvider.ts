@@ -34,21 +34,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             }
         });
 
-        // Listen for messages from the webview
-        webviewView.webview.onDidReceiveMessage(data => {
+
+        // [MODIFIKASI] Listener pesan sekarang menangani dialog
+        webviewView.webview.onDidReceiveMessage(async (data) => { // <-- Tambahkan async
             switch (data.type) {
                 case 'webviewReady': {
-                    // Send the initial data once the webview is ready
                     this.sendModelData();
-                    // [BARU] Kirim history saat UI siap
                     this.sendChatHistory();
                     break;
                 }
                 case 'askQuestion': {
-                    if (!data.value || !data.history) { // [MODIFIKASI] Pastikan history ada
+                    if (!data.value || !data.history) {
                         return;
                     }
-                    // [MODIFIKASI] Kirim pesan dan history ke extension
                     vscode.commands.executeCommand('coda-vscode.askCoDa', data.value, data.history);
                     break;
                 }
@@ -59,11 +57,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     vscode.workspace.getConfiguration('coda-vscode').update('model', data.value, vscode.ConfigurationTarget.Global);
                     break;
                 }
-                 // [BARU] Perintah untuk membersihkan riwayat
+                // [MODIFIKASI TOTAL] Logika clearHistory sekarang ada di sini
                 case 'clearHistory': {
-                    this._context.workspaceState.update(CHAT_HISTORY_KEY, []);
-                    this.postMessageToWebview({ type: 'clearChat' }); // Beri tahu UI untuk membersihkan
-                    vscode.window.showInformationMessage("CoDa: Chat history has been cleared.");
+                    const selection = await vscode.window.showInformationMessage(
+                        "Are you sure you want to clear the chat history?",
+                        { modal: true }, // Membuat dialog ini memblokir interaksi lain
+                        "Yes",
+                        "No"
+                    );
+
+                    if (selection === "Yes") {
+                        // Hapus state
+                        await this._context.workspaceState.update(CHAT_HISTORY_KEY, []);
+                        // Kirim ulang riwayat (yang sekarang kosong) ke UI
+                        this.sendChatHistory(); 
+                        vscode.window.showInformationMessage("CoDa: Chat history has been cleared.");
+                    }
                     break;
                 }
             }
@@ -120,7 +129,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
-                <title>CoDa Chat</title>
+                <title>CoDa Code</title>
             </head>
             <body>
                 <div id="root"></div>

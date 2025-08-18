@@ -110,10 +110,6 @@ function App() {
                         setMessages([initialMessage]); // Tampilkan pesan awal jika history kosong
                     }
                     break;
-                // [BARU] Handler untuk membersihkan chat di UI
-                case 'clearChat':
-                    setMessages([initialMessage]);
-                    break;
             }
         };
 
@@ -153,11 +149,8 @@ function App() {
     
     // [BARU] Fungsi untuk membersihkan riwayat
     const handleClearHistory = () => {
-        // Minta konfirmasi sebelum membersihkan
-        const confirmClear = window.confirm("Are you sure you want to clear the chat history?");
-        if (confirmClear) {
-            vscode.postMessage({ type: 'clearHistory' });
-        }
+        // Langsung kirim perintah untuk memulai proses penghapusan
+        vscode.postMessage({ type: 'clearHistory' });
     };
 
 
