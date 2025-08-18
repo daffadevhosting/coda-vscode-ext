@@ -1,6 +1,6 @@
 # CoDa - Your AI Coding Companion for VS Code
 
-![CoDa Icon](./media/coda-icon.png)
+![CoDa Icon](https://raw.githubusercontent.com/daffadevhosting/coda-vscode-ext/refs/heads/master/media/coda-icon.png)
 
 **CoDa** adalah asisten AI yang terintegrasi langsung di dalam Visual Studio Code, ditenagai oleh model AI canggih dari Google. CoDa dirancang untuk menjadi co-pilot Anda, membantu Anda mengobrol tentang ide, memperbaiki kode yang error, dan meningkatkan produktivitas Anda tanpa harus meninggalkan editor.
 
