@@ -2,8 +2,6 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai"; // Impor library Google Generative AI
 
-const AiModel = 'gemini-2.5-flash';
-
 // Tipe ini akan kita gunakan untuk riwayat obrolan
 export type ChatMessage = {
   role: 'user' | 'model'; // Diubah dari 'assist' menjadi 'model' agar sesuai dengan library
@@ -23,8 +21,10 @@ export type AIResult = {
  * @param userMessage Pesan baru dari pengguna.
  * @returns Hasil dari AI atau pesan error.
  */
-export async function askCoDa(apiKey: string, history: ChatMessage[], userMessage: string): Promise<AIResult> {
-    
+export async function askCoDa(apiKey: string, history: ChatMessage[], userMessage: string, modelName: string): Promise<AIResult> {
+
+  const AiModel = modelName || 'gemini-2.5-flash';
+
   if (!apiKey) {
     return { response: null, error: "API Key is missing. Please configure it in the settings." };
   }
@@ -91,7 +91,10 @@ export async function askCoDa(apiKey: string, history: ChatMessage[], userMessag
  * @param languageId Bahasa pemrograman dari kode tersebut (e.g., 'typescript', 'python').
  * @returns Kode yang sudah diperbaiki DAN penjelasannya.
  */
-export async function fixCodeWithCoDa(apiKey: string, codeToFix: string, languageId: string): Promise<AIResult> {
+export async function fixCodeWithCoDa(apiKey: string, codeToFix: string, languageId: string, modelName: string): Promise<AIResult> {
+
+  const AiModel = modelName || 'gemini-2.5-flash';
+  
     if (!apiKey) {
         return { response: null, error: "API Key is missing." };
     }

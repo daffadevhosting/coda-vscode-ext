@@ -23,8 +23,12 @@
         "title": "CoDa: Fix this code"
       },
       {
-        "command": "coda-vscode.applyFix",
-        "title": "CoDa: Apply Fix"
+        "command": "coda-vscode.setApiKey",
+        "title": "CoDa: Set Gemini API Key"
+      },
+      {
+        "command": "coda-vscode.clearApiKey",
+        "title": "CoDa: Clear Gemini API Key"
       }
     ],
     "menus": {
@@ -46,23 +50,34 @@
           "go",
           "ruby",
           "php",
+          "liquid",
+          "jekyll",
           "html",
           "css"
         ],
         "provided": "quickfix"
       }
     ],
-    "configuration": {
-      "title": "CoDa VSCode",
-      "properties": {
-        "coda-vscode.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Your Google Gemini API Key for CoDa.",
-          "scope": "application"
-        }
+  "configuration": {
+    "title": "CoDa VSCode",
+    "properties": {
+      "coda-vscode.model": {
+        "type": "string",
+        "default": "gemini-2.5-flash",
+        "description": "Select the Google Gemini model to use for CoDa.",
+        "enum": [
+          "gemini-2.5-pro",
+          "gemini-2.5-flash",
+          "gemini-2.0-flash"
+        ],
+        "enumDescriptions": [
+          "Fastest and most cost-effective model, great for simple chat and code fixes.",
+          "The most powerful and capable model, ideal for complex reasoning and code generation.",
+          "A solid and reliable previous-generation model."
+        ]
       }
-    },
+    }
+  },
     "viewsContainers": {
       "activitybar": [
         {

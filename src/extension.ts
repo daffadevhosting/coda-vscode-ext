@@ -3,6 +3,14 @@ import * as vscode from 'vscode';
 import { askCoDa, fixCodeWithCoDa, ChatMessage } from './coda-ai';
 import { SidebarProvider } from './SidebarProvider';
 
+// Nama kunci untuk menyimpan API key di SecretStorage
+const API_KEY_SECRET_KEY = 'coda-gemini-api-key';
+
+// Fungsi helper untuk mendapatkan API key dari brankas
+async function getApiKey(secrets: vscode.SecretStorage): Promise<string | undefined> {
+    return await secrets.get(API_KEY_SECRET_KEY);
+}
+
 // Kelas untuk menangani "Quick Fix" / "Lampu Bohlam"
 class CodaActionProvider implements vscode.CodeActionProvider {
 
@@ -35,6 +43,28 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider)
     );
 
+    // [BARU] Perintah untuk mengatur API Key
+    let setApiKeyCommand = vscode.commands.registerCommand('coda-vscode.setApiKey', async () => {
+        const apiKey = await vscode.window.showInputBox({
+            prompt: "Please enter your Google Gemini API Key",
+            password: true, // Menyembunyikan input
+            ignoreFocusOut: true,
+        });
+
+        if (apiKey) {
+            await context.secrets.store(API_KEY_SECRET_KEY, apiKey);
+            vscode.window.showInformationMessage("CoDa: API Key saved successfully!");
+        }
+    });
+    context.subscriptions.push(setApiKeyCommand);
+
+    // [BARU] Perintah untuk menghapus API Key
+    let clearApiKeyCommand = vscode.commands.registerCommand('coda-vscode.clearApiKey', async () => {
+        await context.secrets.delete(API_KEY_SECRET_KEY);
+        vscode.window.showInformationMessage("CoDa: API Key cleared successfully!");
+    });
+    context.subscriptions.push(clearApiKeyCommand);
+
     // Daftarkan Code Action Provider kita untuk berbagai bahasa
     context.subscriptions.push(
         vscode.languages.registerCodeActionsProvider(
@@ -43,6 +73,22 @@ export function activate(context: vscode.ExtensionContext) {
             { providedCodeActionKinds: CodaActionProvider.providedCodeActionKinds }
         )
     );
+
+    // [DIMODIFIKASI] Fungsi helper untuk memeriksa API Key sebelum menjalankan perintah
+    const ensureApiKey = async (): Promise<string | undefined> => {
+        let apiKey = await getApiKey(context.secrets);
+        if (!apiKey) {
+            const selection = await vscode.window.showErrorMessage(
+                'Gemini API Key is not set. Please set it to use CoDa.',
+                'Set API Key'
+            );
+            if (selection === 'Set API Key') {
+                await vscode.commands.executeCommand('coda-vscode.setApiKey');
+                apiKey = await getApiKey(context.secrets); // Coba ambil lagi setelah di-set
+            }
+        }
+        return apiKey;
+    };
 
 	// Perintah Ask CoDa di sidebar (tetap sama)
 	let askCoDaCommand = vscode.commands.registerCommand('coda-vscode.askCoDa', async (userMessage?: string) => {
@@ -57,18 +103,20 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		if (!userMessage) return;
 
-		const apiKey = vscode.workspace.getConfiguration('coda-vscode').get<string>('apiKey');
+		const apiKey = await ensureApiKey();
 
 		if (!apiKey) {
 			vscode.window.showErrorMessage('Gemini API Key is not set in settings.');
 			return;
 		}
+        
+        const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.5-flash';
 
 		// Langsung kirim pesan pengguna dan status "thinking" ke UI
         sidebarProvider.postMessageToWebview({ type: 'addUserMessage', data: { role: 'user', text: userMessage } });
 		sidebarProvider.postMessageToWebview({ type: 'addMessage', data: { role: 'model', text: 'Thinking...' } });
 
-		const result = await askCoDa(apiKey, [], userMessage); // History belum diimplementasikan
+		const result = await askCoDa(apiKey, [], userMessage, modelName); // History belum diimplementasikan
 
 		if (result.error) {
 			sidebarProvider.postMessageToWebview({ type: 'replaceLastMessage', data: { role: 'model', text: `Error: ${result.error}` } });
@@ -82,19 +130,21 @@ export function activate(context: vscode.ExtensionContext) {
     let fixErrorCommand = vscode.commands.registerCommand('coda-vscode.fixError', async (document: vscode.TextDocument, range: vscode.Range) => {
         const selectedText = document.getText(range);
         const languageId = document.languageId;
-        const apiKey = vscode.workspace.getConfiguration('coda-vscode').get<string>('apiKey');
+        const apiKey = await ensureApiKey();
 
         if (!apiKey) {
             vscode.window.showErrorMessage('Gemini API Key is not set.');
             return;
         }
 
+        const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.5-flash';
+
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Window,
             title: "CoDa is analyzing your code...",
             cancellable: false
         }, async () => {
-            const result = await fixCodeWithCoDa(apiKey, selectedText, languageId);
+            const result = await fixCodeWithCoDa(apiKey, selectedText, languageId, modelName);
 
             if (result.error) {
                 vscode.window.showErrorMessage(`CoDa Error: ${result.error}`);
