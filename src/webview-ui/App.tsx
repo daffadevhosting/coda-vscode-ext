@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Send, User, Sparkles, MessageCircleCode } from 'lucide-react';
-import { VSCodeButton, VSCodeTextArea, VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { Send, User, MessageCircleCode } from 'lucide-react';
+import { VSCodeButton, VSCodeTextArea, VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
 import './main.css';
 
 // @ts-ignore
@@ -17,12 +17,14 @@ interface Message {
 
 const initialMessage: Message = {
     role: 'model',
-    text: "👋 Hi! I'm CoDa, your AI assistant in VS Code.\nI'm here to help you with a variety of programming tasks. Feel free to ask questions or provide me with code snippets to analyze."
+    text: "👋 Halo! Saya CoDa, asisten AI Anda di VS Code.\n\nSaya di sini untuk membantu Anda dengan berbagai macam tugas pemrograman. Silakan ajukan pertanyaan atau berikan saya potongan kode untuk dianalisis."
 };
 
 function App() {
     const [messages, setMessages] = useState<Message[]>([initialMessage]);
     const [inputText, setInputText] = useState('');
+    const [models, setModels] = useState<string[]>([]);
+    const [selectedModel, setSelectedModel] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textFieldRef = useRef<any>(null);
 
@@ -33,11 +35,13 @@ function App() {
     useEffect(scrollToBottom, [messages]);
 
     useEffect(() => {
+        // Signal to the extension that the webview is ready
+        vscode.postMessage({ type: 'webviewReady' });
+
         const handleMessage = (event: MessageEvent) => {
             const message = event.data;
             switch (message.type) {
                 case 'addUserMessage':
-                    // Replace initial message if it's the first user message
                     if (messages.length === 1 && messages[0] === initialMessage) {
                         setMessages([message.data]);
                     } else {
@@ -56,11 +60,16 @@ function App() {
                         return newMessages;
                     });
                     break;
+                case 'updateModels':
+                    setModels(message.data.models || []);
+                    setSelectedModel(message.data.currentModel || '');
+                    // DEBUG: Send confirmation back to extension
+                    vscode.postMessage({ type: 'debug', value: `Received ${message.data.models.length} models.` });
+                    break;
             }
         };
 
         window.addEventListener('message', handleMessage);
-        // Focus the text field on load
         if (textFieldRef.current) {
             textFieldRef.current.focus();
         }
@@ -75,11 +84,17 @@ function App() {
         }
     };
     
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             handleSendMessage();
         }
+    };
+
+    const handleModelChange = (e: any) => {
+        const newModel = e.target.value;
+        setSelectedModel(newModel);
+        vscode.postMessage({ type: 'setModel', value: newModel });
     };
 
     const MessageIcon = ({ role }: { role: 'user' | 'model' }) => (
@@ -102,6 +117,11 @@ function App() {
                 <div ref={messagesEndRef} />
             </section>
             <footer className="form-container">
+                <VSCodeDropdown value={selectedModel} onChange={handleModelChange} className="model-dropdown">
+                    {models.map(model => (
+                        <VSCodeOption key={model} value={model}>{model}</VSCodeOption>
+                    ))}
+                </VSCodeDropdown>
                 <div className="input-wrapper">
                     <VSCodeTextArea
                         ref={textFieldRef}
@@ -118,7 +138,7 @@ function App() {
                         disabled={!inputText.trim()}
                         className="send-button"
                     >
-                        <Send size={16} />
+                        <Send size={18} />
                     </VSCodeButton>
                 </div>
             </footer>

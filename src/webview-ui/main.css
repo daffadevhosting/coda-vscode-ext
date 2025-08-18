@@ -47,7 +47,6 @@ body {
     justify-content: center;
     color: var(--vscode-icon-foreground);
     border-radius: 50%;
-    /* No background color here, let the content bubble have it */
 }
 
 .model-message .message-icon {
@@ -105,29 +104,38 @@ body {
 }
 
 .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
     padding: 12px 8px 8px 8px;
     border-top: 1px solid var(--vscode-sideBar-border);
     background-color: var(--vscode-sideBar-background);
 }
 
+.model-dropdown {
+    min-width: 150px;
+}
+
 .input-wrapper {
     position: relative;
     display: flex;
+    flex-grow: 1;
     width: 100%;
 }
 
 .input-field {
     position: relative;
     width: 100%;
-    box-sizing: border-box; /* Ensure padding is included in width */
-    /* The toolkit component will handle its own styling, but we need to add padding for the button */
+    box-sizing: border-box;
 }
 
 .send-button {
     position: absolute;
     right: 4px;
     bottom: 4px;
-    /* The toolkit component with appearance="icon" handles much of the styling */
+    width: 24px;
+    height: 24px;
 }
 
 /* Scrollbar styles */

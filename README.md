@@ -2,54 +2,49 @@
 
 ![CoDa Icon](https://raw.githubusercontent.com/daffadevhosting/coda-vscode-ext/refs/heads/master/media/coda-icon.png)
 
-**CoDa** adalah asisten AI yang terintegrasi langsung di dalam Visual Studio Code, ditenagai oleh model AI canggih dari Google. CoDa dirancang untuk menjadi co-pilot Anda, membantu Anda mengobrol tentang ide, memperbaiki kode yang error, dan meningkatkan produktivitas Anda tanpa harus meninggalkan editor.
+**CoDa** is an AI assistant powered by Google's most advanced models, integrated directly into your Visual Studio Code environment. It's designed to be your co-pilot, helping you chat about ideas, fix broken code, and boost your productivity without ever leaving the editor.
 
 ---
 
-## Fitur Utama
+## Features
 
-CoDa hadir dengan serangkaian fitur yang dirancang untuk mempercepat alur kerja pengembangan Anda:
-
-### 1. 💬 **AI Chat di Sidebar**
-Buka sidebar CoDa untuk memulai percakapan interaktif. Anda bisa:
-- **Diskusi Konsep:** Tanyakan tentang arsitektur, pola desain, atau cara kerja sebuah teknologi.
-- **Debugging Kode:** Tempelkan potongan kode langsung di chat untuk mendapatkan analisis dan perbaikan.
-- **Brainstorming:** Cari ide untuk nama variabel, fungsi, atau bahkan seluruh proyek.
-
-### 2. 💡 **Perbaikan Cepat (Quick Fix)**
-Temukan error di kode Anda? Cukup seleksi blok kode yang bermasalah, dan sebuah ikon lampu bohlam akan muncul. Klik dan pilih **"CoDa: Fix this code"** untuk mendapatkan saran perbaikan.
-
-### 3. ✨ **Tampilan Perbandingan (Diff View)**
-Alih-alih langsung mengubah kode Anda, CoDa akan menampilkan perbaikan dalam tampilan *diff* (perbandingan) berdampingan. Anda punya kendali penuh untuk menerima atau menolak perubahan, persis seperti pengalaman menggunakan GitHub Copilot.
+- **💬 Conversational AI Chat**: A seamless chat interface in your sidebar to discuss concepts, debug code snippets, or brainstorm ideas.
+- **💡 Smart Quick Fixes**: Select any piece of code and get intelligent repair suggestions through the Quick Fix lightbulb menu.
+- **✨ Copilot-like Modal Suggestions**: Code fixes are presented in a modal dialog, allowing you to review and **Accept** or **Discard** changes, keeping you in control.
+- **🤖 On-the-fly Model Selection**: Switch between powerful Google AI models (like Gemini Pro and Flash) directly from a dropdown in the chat view.
+- **🎨 Adaptive UI**: The user interface automatically adapts to your VS Code theme for a native and comfortable look.
 
 ---
 
-## Setup & Konfigurasi
+## Getting Started
 
-Hanya butuh dua langkah untuk memulai:
+It only takes two steps to get started:
 
-1.  **Instal Ekstensi:** Cari **"CoDa"** di Visual Studio Marketplace dan klik **Install**.
-2.  **Atur API Key:**
-    * Buka **Settings** di VS Code (`Ctrl/Cmd + ,`).
-    * Cari **`CoDa`**.
-    * Masukkan **Google Gemini API Key** Anda di kolom yang tersedia. Anda bisa mendapatkan API Key dari [Google AI](https://aistudio.google.com/apikey).
+1.  **Install the Extension**: Search for **"CoDa"** in the Visual Studio Marketplace and click **Install**.
+2.  **Set Your API Key**:
+    *   Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) to open the Command Palette.
+    *   Type `CoDa: Set Gemini API Key` and press Enter.
+    *   Paste your Google Gemini API Key. You can get one from [Google AI Studio](https://aistudio.google.com/apikey).
 
----
-
-## Cara Menggunakan
-
-### Mengobrol dengan CoDa
-1.  Klik ikon CoDa di **Activity Bar** (sidebar paling kiri).
-2.  Panel chat akan terbuka.
-3.  Ketik pesan Anda di bagian bawah dan tekan Enter.
-
-### Memperbaiki Kode
-1.  Buka berkas kode Anda.
-2.  **Seleksi** bagian kode yang ingin diperbaiki.
-3.  Klik **ikon lampu bohlam** yang muncul di samping, atau tekan `Ctrl + .` (`Cmd + .` di Mac).
-4.  Pilih **"CoDa: Fix this code"** dari menu popup.
-5.  Tinjau perbaikan di tab *diff* yang baru, lalu tutup untuk kembali ke editor Anda.
+Your key is stored securely using VS Code's `SecretStorage`.
 
 ---
 
-Selamat *ngoding* dengan lebih cerdas bersama CoDa! 🚀
+## How to Use
+
+### Chatting with CoDa
+
+1.  Click the **CoDa icon** in the Activity Bar (the far-left sidebar) to open the chat view.
+2.  Select the AI model you want to use from the dropdown at the bottom.
+3.  Type your message in the text area. Press **`Ctrl+Enter`** (`Cmd+Enter` on Mac) to send.
+
+### Fixing Code
+
+1.  In your code file, **select the block of code** you want to fix.
+2.  Click the **lightbulb icon** that appears next to it, or press `Ctrl+.` (`Cmd+.` on Mac).
+3.  Select **"CoDa: Fix this code"** from the menu.
+4.  A modal popup will appear with a proposed fix and an explanation. Review the changes and click **Accept** to apply them directly to your code.
+
+---
+
+Happy coding! 🚀

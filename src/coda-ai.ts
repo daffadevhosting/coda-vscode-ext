@@ -94,7 +94,7 @@ export async function askCoDa(apiKey: string, history: ChatMessage[], userMessag
 export async function fixCodeWithCoDa(apiKey: string, codeToFix: string, languageId: string, modelName: string): Promise<AIResult> {
 
   const AiModel = modelName || 'gemini-2.5-flash';
-  
+
     if (!apiKey) {
         return { response: null, error: "API Key is missing." };
     }
@@ -113,8 +113,8 @@ export async function fixCodeWithCoDa(apiKey: string, codeToFix: string, languag
             Identify any errors (syntax or logical) and fix them.
 
             Your response MUST be a valid JSON object with two properties:
-            1. "fixedCode": A string containing only the corrected code.
-            2. "explanation": A brief, one-sentence explanation of what was fixed.
+            1. \"fixedCode\": A string containing only the corrected code.
+            2. \"explanation\": A brief, one-sentence explanation of what was fixed.
 
             Code with error:
             \`\`\`${languageId}

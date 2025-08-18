@@ -1,6 +1,7 @@
 {
   "name": "coda-vscode",
   "displayName": "coda-vscode",
+  "publisher": "daffadev",
   "description": "Your AI coding companion, CoDa.",
   "version": "0.0.1",
   "engines": {

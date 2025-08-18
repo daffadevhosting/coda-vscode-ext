@@ -38,7 +38,7 @@ class CodaActionProvider implements vscode.CodeActionProvider {
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "coda-vscode" is now active!');
 
-    const sidebarProvider = new SidebarProvider(context.extensionUri);
+    const sidebarProvider = new SidebarProvider(context);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider)
     );
@@ -150,25 +150,39 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showErrorMessage(`CoDa Error: ${result.error}`);
             } else if (result.response) {
                 try {
+                    // Coba parse respons sebagai JSON. Mungkin gagal jika AI merespons dengan teks biasa.
                     const jsonResponse = JSON.parse(result.response);
                     const { fixedCode, explanation } = jsonResponse;
 
                     if (fixedCode) {
-                        // Tampilkan popup perbandingan (diff view)
-                        vscode.commands.executeCommand('vscode.diff',
-                            document.uri, // Dokumen asli
-                            vscode.Uri.parse(`untitled:${document.fileName}-coda-fix.git`), // Dokumen "baru"
-                            `Original vs. CoDa Fix: ${explanation || ''}`,
+                        const selectedText = document.getText(range);
+                        const diffDetail = `--- Original\n+++ CoDa's Fix\n@@\n-${selectedText.split('\n').join('\n-')}\n+${fixedCode.split('\n').join('\n+')}`;
+
+                        const selection = await vscode.window.showInformationMessage(
+                            explanation || "CoDa has a suggestion for you", 
                             {
-                                preview: true,
-                                selection: range
-                            }
+                                modal: true,
+                                detail: diffDetail
+                            },
+                            'Accept',
+                            'Discard'
                         );
+
+                        if (selection === 'Accept') {
+                            const edit = new vscode.WorkspaceEdit();
+                            edit.replace(document.uri, range, fixedCode);
+                            await vscode.workspace.applyEdit(edit);
+                            vscode.window.showInformationMessage("CoDa's fix has been applied.");
+                        }
+
+                    } else if (explanation) {
+                        vscode.window.showInformationMessage(`CoDa: ${explanation}`);
                     } else {
-                        throw new Error("AI did not provide 'fixedCode'.");
+                        vscode.window.showWarningMessage("CoDa did not provide a fix or an explanation.");
                     }
-                } catch (e: any) {
-                    vscode.window.showErrorMessage(`CoDa Error: Failed to parse AI response. ${e.message}`);
+                } catch (e) {
+                    // Jika parsing JSON gagal, anggap responsnya adalah penjelasan teks biasa dari AI.
+                    vscode.window.showInformationMessage(`CoDa says: "${result.response}"`);
                 }
             }
         });
