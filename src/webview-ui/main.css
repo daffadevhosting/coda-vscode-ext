@@ -1,28 +1,154 @@
-@import "tailwindcss";
+/* src/webview-ui/main.css */
 
-/* Keseluruhan scrollbar */
+/* Set body background to match VS Code's sidebar */
+body {
+    background-color: var(--vscode-sideBar-background);
+    color: var(--vscode-foreground);
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-font-weight);
+    font-size: var(--vscode-font-size);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0 8px;
+}
+
+.message {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    max-width: 100%;
+}
+
+.user-message {
+    justify-content: flex-start;
+    flex-direction: row-reverse;
+}
+
+.message-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vscode-icon-foreground);
+    border-radius: 50%;
+    /* No background color here, let the content bubble have it */
+}
+
+.model-message .message-icon {
+    color: var(--vscode-terminal-ansiBrightCyan);
+}
+
+.message-content {
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 90%;
+    box-sizing: border-box;
+}
+
+.model-message .message-content {
+    background-color: var(--vscode-editorWidget-background);
+}
+
+.user-message .message-content {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+}
+
+/* Markdown styling */
+.message-content p,
+.message-content ul,
+.message-content ol {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+.message-content pre {
+    background-color: var(--vscode-textBlockQuote-background);
+    border: 1px solid var(--vscode-textBlockQuote-border);
+    padding: 12px;
+    border-radius: 4px;
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+.message-content code {
+    font-family: var(--vscode-editor-font-family);
+    background-color: var(--vscode-textCodeBlock-background);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 95%;
+}
+
+.message-content pre code {
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    font-size: inherit;
+}
+
+.form-container {
+    padding: 12px 8px 8px 8px;
+    border-top: 1px solid var(--vscode-sideBar-border);
+    background-color: var(--vscode-sideBar-background);
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.input-field {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box; /* Ensure padding is included in width */
+    /* The toolkit component will handle its own styling, but we need to add padding for the button */
+}
+
+.send-button {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    /* The toolkit component with appearance="icon" handles much of the styling */
+}
+
+/* Scrollbar styles */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+    width: 6px;
+    height: 6px;
 }
 
-/* Bagian track (latar belakang scrollbar) */
 ::-webkit-scrollbar-track {
-  background: var(--vscode-sideBar-background);
+    background: transparent;
 }
 
-/* Bagian thumb (handle yang bisa digeser) */
 ::-webkit-scrollbar-thumb {
-  background: var(--vscode-scrollbarSlider-background);
-  border-radius: 4px;
+    background: var(--vscode-scrollbarSlider-background);
+    border-radius: 6px;
 }
 
-/* Saat thumb di-hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--vscode-scrollbarSlider-hoverBackground);
+    background: var(--vscode-scrollbarSlider-hoverBackground);
 }
 
-/* Saat thumb aktif (diklik) */
 ::-webkit-scrollbar-thumb:active {
-  background: var(--vscode-scrollbarSlider-activeBackground);
+    background: var(--vscode-scrollbarSlider-activeBackground);
 }
