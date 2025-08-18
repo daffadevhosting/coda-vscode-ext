@@ -10,29 +10,48 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:coda-vscode.chatView"
   ],
   "main": "./out/extension.js",
-"contributes": {
-  "commands": [
-    {
-      "command": "coda-vscode.askCoDa",
-      "title": "Ask CoDa"
-    },
-    {
-      "command": "coda-vscode.fixError",
-      "title": "CoDa: Fix this code"
-    }
-  ],
-  "menus": {
-    "editor/context": [
+  "contributes": {
+    "commands": [
       {
-        "when": "editorHasSelection",
+        "command": "coda-vscode.askCoDa",
+        "title": "Ask CoDa"
+      },
+      {
         "command": "coda-vscode.fixError",
-        "group": "1_modification"
+        "title": "CoDa: Fix this code"
+      },
+      {
+        "command": "coda-vscode.applyFix",
+        "title": "CoDa: Apply Fix"
       }
-    ]
-  },
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorHasSelection",
+          "command": "coda-vscode.fixError",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "codeActions": [
+      {
+        "languages": [
+          "typescript",
+          "javascript",
+          "python",
+          "java",
+          "go",
+          "ruby",
+          "php",
+          "html",
+          "css"
+        ],
+        "provided": "quickfix"
+      }
+    ],
     "configuration": {
       "title": "CoDa VSCode",
       "properties": {
@@ -49,7 +68,7 @@
         {
           "id": "coda-sidebar",
           "title": "CoDa",
-          "icon": "media/coda-icon.png"
+          "icon": "media/coda-icon.svg"
         }
       ]
     },
@@ -58,7 +77,8 @@
         {
           "id": "coda-vscode.chatView",
           "name": "Chat",
-          "type": "webview"
+          "type": "webview",
+          "icon": "media/coda-icon.svg"
         }
       ]
     }
@@ -72,6 +92,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/react": "^19.1.10",
@@ -81,7 +102,13 @@
     "@typescript-eslint/parser": "^8.39.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
+    "autoprefixer": "^10.4.21",
+    "css-loader": "^7.1.2",
     "eslint": "^9.32.0",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.1.1",
+    "style-loader": "^4.0.0",
+    "tailwindcss": "^4.1.12",
     "ts-loader": "^9.5.2",
     "typescript": "^5.9.2",
     "webpack": "^5.101.0",
@@ -89,6 +116,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@tailwindcss/postcss": "^4.1.12",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",

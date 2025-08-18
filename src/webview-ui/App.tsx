@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import './main.css';
 
 // @ts-ignore
 const vscode = acquireVsCodeApi();
@@ -67,25 +68,29 @@ function App() {
     };
 
     return (
-        <main>
-            <section className="messages-list">
-                {messages.map((msg, index) => (
-                    <div key={index} className={`message ${msg.role}`}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
-            </section>
-            <form onSubmit={handleSendMessage} className="chat-input-form">
-                <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Ask CoDa..."
-                />
-                <button type="submit">Send</button>
-            </form>
-        </main>
+    <main className="bg-transparent text-white flex flex-col h-screen p-2">
+        <section className="flex-1 overflow-y-auto">
+            {messages.map((msg, index) => (
+                <div key={index} 
+                    className={`prose prose-invert prose-pre-wrap max-w-none w-fit mb-2 p-2 rounded-lg ${msg.role === 'user' ? 'bg-blue-600 ml-auto' : 'bg-gray-700 mr-auto'}`}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                </div>
+            ))}
+            <div ref={messagesEndRef} />
+        </section>
+        <form onSubmit={handleSendMessage} className="flex-shrink-0 flex items-center p-2 border-t border-gray-600">
+            <input
+                type="text"
+                className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Ask CoDa..."
+            />
+            <button type="submit" className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Send
+            </button>
+        </form>
+    </main>
     );
 }
 

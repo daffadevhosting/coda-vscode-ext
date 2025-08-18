@@ -1,71 +1,55 @@
-# coda-vscode README
+# CoDa - Your AI Coding Companion for VS Code
 
-This is the README for your extension "coda-vscode". After writing up a brief description, we recommend including the following sections.
+![CoDa Icon](./media/coda-icon.png)
 
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+**CoDa** adalah asisten AI yang terintegrasi langsung di dalam Visual Studio Code, ditenagai oleh model AI canggih dari Google. CoDa dirancang untuk menjadi co-pilot Anda, membantu Anda mengobrol tentang ide, memperbaiki kode yang error, dan meningkatkan produktivitas Anda tanpa harus meninggalkan editor.
 
 ---
 
-## Following extension guidelines
+## Fitur Utama
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+CoDa hadir dengan serangkaian fitur yang dirancang untuk mempercepat alur kerja pengembangan Anda:
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+### 1. 💬 **AI Chat di Sidebar**
+Buka sidebar CoDa untuk memulai percakapan interaktif. Anda bisa:
+- **Diskusi Konsep:** Tanyakan tentang arsitektur, pola desain, atau cara kerja sebuah teknologi.
+- **Debugging Kode:** Tempelkan potongan kode langsung di chat untuk mendapatkan analisis dan perbaikan.
+- **Brainstorming:** Cari ide untuk nama variabel, fungsi, atau bahkan seluruh proyek.
 
-## Working with Markdown
+### 2. 💡 **Perbaikan Cepat (Quick Fix)**
+Temukan error di kode Anda? Cukup seleksi blok kode yang bermasalah, dan sebuah ikon lampu bohlam akan muncul. Klik dan pilih **"CoDa: Fix this code"** untuk mendapatkan saran perbaikan.
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+### 3. ✨ **Tampilan Perbandingan (Diff View)**
+Alih-alih langsung mengubah kode Anda, CoDa akan menampilkan perbaikan dalam tampilan *diff* (perbandingan) berdampingan. Anda punya kendali penuh untuk menerima atau menolak perubahan, persis seperti pengalaman menggunakan GitHub Copilot.
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+---
 
-## For more information
+## Setup & Konfigurasi
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+Hanya butuh dua langkah untuk memulai:
 
-**Enjoy!**
+1.  **Instal Ekstensi:** Cari **"CoDa"** di Visual Studio Marketplace dan klik **Install**.
+2.  **Atur API Key:**
+    * Buka **Settings** di VS Code (`Ctrl/Cmd + ,`).
+    * Cari **`CoDa`**.
+    * Masukkan **Google Gemini API Key** Anda di kolom yang tersedia. Anda bisa mendapatkan API Key dari [Google AI](https://aistudio.google.com/apikey).
+
+---
+
+## Cara Menggunakan
+
+### Mengobrol dengan CoDa
+1.  Klik ikon CoDa di **Activity Bar** (sidebar paling kiri).
+2.  Panel chat akan terbuka.
+3.  Ketik pesan Anda di bagian bawah dan tekan Enter.
+
+### Memperbaiki Kode
+1.  Buka berkas kode Anda.
+2.  **Seleksi** bagian kode yang ingin diperbaiki.
+3.  Klik **ikon lampu bohlam** yang muncul di samping, atau tekan `Ctrl + .` (`Cmd + .` di Mac).
+4.  Pilih **"CoDa: Fix this code"** dari menu popup.
+5.  Tinjau perbaikan di tab *diff* yang baru, lalu tutup untuk kembali ke editor Anda.
+
+---
+
+Selamat *ngoding* dengan lebih cerdas bersama CoDa! 🚀

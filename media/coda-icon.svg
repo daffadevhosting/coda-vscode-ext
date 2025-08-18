@@ -1,1 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-code-icon lucide-message-circle-code"><path d="m10 9-3 3 3 3"/><path d="m14 15 3-3-3-3"/><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="40" height="40" viewBox="0 0 1080 1080" xml:space="preserve">
+<defs>
+</defs>
+<rect x="0" y="0" width="100%" height="100%" fill="transparent"></rect>
+<g transform="matrix(1 0 0 1 540 540)" id="31f93c84-d4a8-4bd2-99e0-e46b9cdca451"  >
+<rect style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1; visibility: hidden;" vector-effect="non-scaling-stroke"  x="-540" y="-540" rx="0" ry="0" width="1080" height="1080" />
+</g>
+<g transform="matrix(1 0 0 1 540 540)" id="983d0cb1-4587-425b-8c89-81e507dd44f9"  >
+</g>
+<g transform="matrix(45 0 0 45 544 544)"  >
+<path style="stroke: rgb(0,0,0); stroke-width: 3; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-12, -12)" d="M 2.992 16.342 C 3.139039164346464 16.712914926701014 3.1717754335683526 17.11933222650893 3.0860000000000003 17.509 L 2.021 20.799 C 1.9512299280355263 21.13822772339746 2.0619492990925368 21.48940493694462 2.313666764708217 21.72727386885329 C 2.5653842303238967 21.96514280076196 2.9222585840374498 22.05583409088148 3.2569999999999997 21.967 L 6.67 20.968999999999998 C 7.0377158282042185 20.896062400087143 7.418528640101471 20.927941179609025 7.769 21.060999999999996 C 12.17750899640519 23.11976424849466 17.42799329553835 21.706698727523957 20.207698533199164 17.71336671102616 C 22.987403770859977 13.720034694528366 22.48947067749089 8.305572378053352 19.028066467802077 4.886194847067063 C 15.566662258113269 1.4668173160807747 10.146521547284015 1.0350601889694353 6.1874421618393605 3.8633374423539912 C 2.2283627763947056 6.691614695738545 0.8795384717662218 11.958968161877259 2.9919999999999973 16.34199999999999" stroke-linecap="round" />
+</g>
+<g transform="matrix(45 0 0 45 357 542)"  >
+<path style="stroke: rgb(20,49,179); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-8.5, -12)" d="M 10 9 L 7 12 L 10 15" stroke-linecap="round" />
+</g>
+<g transform="matrix(45 0 0 45 757.5 542)"  >
+<path style="stroke: rgb(20,49,179); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-15.5, -12)" d="M 14 15 L 17 12 L 14 9" stroke-linecap="round" />
+</g>
+<g transform="matrix(1 0 0 1 473.24 542.5)" id="7bfa893b-cc9d-49a3-bf77-02fac7f41db8"  >
+<circle style="stroke: rgb(0,0,0); stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(97,97,97); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  cx="0" cy="0" r="35" />
+</g>
+<g transform="matrix(1 0 0 1 645.26 542.5)" id="af186b7b-e6fc-4999-b948-d0acf92d54ad"  >
+<circle style="stroke: rgb(0,0,0); stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  cx="0" cy="0" r="35" />
+</g>
+<g transform="matrix(0 0 0 0 0 0)"  >
+<g style=""   >
+</g>
+</g>
+<g transform="matrix(NaN NaN NaN NaN 0 0)"  >
+<g style=""   >
+</g>
+</g>
+</svg>

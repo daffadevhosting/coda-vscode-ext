@@ -4,14 +4,11 @@
 
 const path = require('path');
 
-//@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
-/** @type WebpackConfig */
 const extensionConfig = {
   target: 'node',
 	mode: 'none',
-
   entry: './src/extension.ts',
   output: {
     path: path.resolve(__dirname, 'out'),
@@ -29,20 +26,14 @@ const extensionConfig = {
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: [
-          {
-            loader: 'ts-loader'
-          }
-        ]
+        use: 'ts-loader'
       }
     ]
   },
   devtool: 'nosources-source-map',
-  infrastructureLogging: {
-    level: "log",
-  },
 };
 
+/** @type WebpackConfig */
 const webviewConfig = {
     target: "web",
     mode: "development",
@@ -52,21 +43,24 @@ const webviewConfig = {
         filename: "webview.js",
     },
     resolve: {
-        extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
+        extensions: [".ts", ".tsx", ".js", ".jsx"],
     },
     module: {
         rules: [
             {
                 test: /\.(ts|tsx)$/,
                 exclude: /node_modules/,
-                use: [{
-                    loader: 'ts-loader',
-                    // BARIS BARU DI BAWAH INI
-                    options: {
-                        configFile: path.resolve(__dirname, 'src', 'webview-ui', 'tsconfig.json')
-                    }
-                }],
+                use: 'ts-loader'
             },
+            // [BARU] Aturan untuk memproses CSS dengan Tailwind
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'postcss-loader'
+                ]
+            }
         ],
     },
     devtool: "inline-source-map",

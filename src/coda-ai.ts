@@ -2,6 +2,8 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai"; // Impor library Google Generative AI
 
+const AiModel = 'gemini-2.5-flash';
+
 // Tipe ini akan kita gunakan untuk riwayat obrolan
 export type ChatMessage = {
   role: 'user' | 'model'; // Diubah dari 'assist' menjadi 'model' agar sesuai dengan library
@@ -29,7 +31,7 @@ export async function askCoDa(apiKey: string, history: ChatMessage[], userMessag
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Kita gunakan model yang kuat
+    const model = genAI.getGenerativeModel({ model: AiModel });
 
     const fullPrompt = `You are **CoDa** the "CodeAssist AI Companion," a friendly and knowledgeable AI assistant specializing in software development, technology, and AI news, running inside Visual Studio Code.
 
@@ -83,30 +85,38 @@ export async function askCoDa(apiKey: string, history: ChatMessage[], userMessag
 }
 
 /**
- * Fungsi khusus untuk memperbaiki blok kode.
+ * [UPGRADED] Fungsi khusus untuk memperbaiki blok kode.
  * @param apiKey Kunci API Google Gemini Anda.
  * @param codeToFix Blok kode yang akan diperbaiki.
- * @returns Hanya blok kode yang sudah diperbaiki atau pesan error.
+ * @param languageId Bahasa pemrograman dari kode tersebut (e.g., 'typescript', 'python').
+ * @returns Kode yang sudah diperbaiki DAN penjelasannya.
  */
-export async function fixCodeWithCoDa(apiKey: string, codeToFix: string): Promise<AIResult> {
+export async function fixCodeWithCoDa(apiKey: string, codeToFix: string, languageId: string): Promise<AIResult> {
     if (!apiKey) {
         return { response: null, error: "API Key is missing." };
     }
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ 
+            model: AiModel,
+            generationConfig: {
+                responseMimeType: "application/json",
+            }
+        });
 
         const prompt = `
-            You are an expert code debugger. Analyze the following code snippet, identify any errors (syntax or logical), and fix them.
-            IMPORTANT: Your response MUST ONLY be the corrected code block itself, without any explanation, intro, or markdown fences like \`\`\`.
-            
+            You are an expert code debugger. Analyze the following ${languageId} code snippet.
+            Identify any errors (syntax or logical) and fix them.
+
+            Your response MUST be a valid JSON object with two properties:
+            1. "fixedCode": A string containing only the corrected code.
+            2. "explanation": A brief, one-sentence explanation of what was fixed.
+
             Code with error:
-            \`\`\`
+            \`\`\`${languageId}
             ${codeToFix}
             \`\`\`
-
-            Corrected code:
         `;
 
         const result = await model.generateContent(prompt);

@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Keseluruhan scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+/* Bagian track (latar belakang scrollbar) */
+::-webkit-scrollbar-track {
+  background: var(--vscode-sideBar-background);
+}
+
+/* Bagian thumb (handle yang bisa digeser) */
+::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background);
+  border-radius: 4px;
+}
+
+/* Saat thumb di-hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+/* Saat thumb aktif (diklik) */
+::-webkit-scrollbar-thumb:active {
+  background: var(--vscode-scrollbarSlider-activeBackground);
+}
