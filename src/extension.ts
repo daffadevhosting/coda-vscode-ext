@@ -93,49 +93,55 @@ export function activate(context: vscode.ExtensionContext) {
     };
 
     // [DIMODIFIKASI] Perintah Ask CoDa di sidebar
-    let askCoDaCommand = vscode.commands.registerCommand('coda-vscode.askCoDa', async (userMessage?: string, history?: ChatMessage[]) => {
+    let askCoDaCommand = vscode.commands.registerCommand('coda-vscode.askCoDa', async (userMessageFromWebview?: string) => {
+        let userMessage = userMessageFromWebview;
+
+        // 1. Pastikan API Key ada
+        const apiKey = await ensureApiKey();
+        if (!apiKey) return;
+
+        // 2. Jika perintah ini tidak dipicu dari webview, minta input dari pengguna
+        if (!userMessage) {
+            const input = await vscode.window.showInputBox({
+                prompt: "Ask CoDa anything...",
+                placeHolder: "Contoh: Jelaskan fungsi ini dalam bahasa yang sederhana."
+            });
+            if (!input) return; // Pengguna membatalkan
+            userMessage = input;
+        }
+
+        // 3. Pastikan sidebar terlihat dan kirim pesan pengguna ke sana
         if (!sidebarProvider.view) {
             await vscode.commands.executeCommand('coda-vscode.chatView.focus');
-        } else {
-            sidebarProvider.view.show?.(true);
+        }
+        sidebarProvider.view?.show(true);
+        // Hanya kirim pesan pengguna jika belum ada (kasus non-webview)
+        if (!userMessageFromWebview) {
+             sidebarProvider.postMessageToWebview({ type: 'addUserMessage', data: { role: 'user', text: userMessage } });
         }
 
-        // Jika userMessage tidak diberikan dari webview, tampilkan input box
-        if (!userMessage) {
-            userMessage = await vscode.window.showInputBox({ prompt: "Ask CoDa..." });
-            if (!userMessage) return; // Batalkan jika tidak ada input
-             // Jika dipanggil dari input box, kirim pesan ke webview
-            sidebarProvider.postMessageToWebview({ type: 'addUserMessage', data: { role: 'user', text: userMessage } });
-        }
-
-        const apiKey = await ensureApiKey();
-        if (!apiKey) {
-            return; // API key tidak ada, hentikan eksekusi
-        }
-
-        const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.5-flash';
-
-        // Tampilkan status "thinking..."
+        // 4. Tampilkan status "Thinking..." di webview
         sidebarProvider.postMessageToWebview({ type: 'addMessage', data: { role: 'model', text: 'Thinking...' } });
 
-        // Dapatkan riwayat dari argumen atau dari state jika tidak ada
-        const currentHistory = history || context.workspaceState.get<ChatMessage[]>(CHAT_HISTORY_KEY) || [];
+        // 5. Dapatkan riwayat obrolan dari workspaceState (satu sumber kebenaran)
+        const currentHistory = context.workspaceState.get<ChatMessage[]>(CHAT_HISTORY_KEY) || [];
+        const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.0-flash';
 
+        // 6. Panggil AI
         const result = await askCoDa(apiKey, currentHistory, userMessage, modelName);
 
-        // [BARU] Bentuk pesan balasan dari model
+        // 7. Bentuk dan kirim respons model ke webview
         const modelResponse: ChatMessage = {
             role: 'model',
             parts: [{ text: result.response || `Error: ${result.error}` }]
         };
 
-        // Ganti pesan "Thinking..." dengan respons dari AI
         sidebarProvider.postMessageToWebview({
             type: 'replaceLastMessage',
             data: { role: 'model', text: modelResponse.parts[0].text }
         });
 
-        // [BARU] Update dan simpan riwayat baru
+        // 8. Update dan simpan riwayat baru jika berhasil
         if (!result.error) {
             const userRequest: ChatMessage = { role: 'user', parts: [{ text: userMessage }] };
             const newHistory = [...currentHistory, userRequest, modelResponse];
@@ -155,11 +161,11 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.5-flash';
+        const modelName = vscode.workspace.getConfiguration('coda-vscode').get<string>('model') || 'gemini-2.0-flash';
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Window,
-            title: "CoDa is analyzing your code...",
+            title: "CoDa is analyzing your code…",
             cancellable: false
         }, async () => {
             const result = await fixCodeWithCoDa(apiKey, selectedText, languageId, modelName);
@@ -205,6 +211,69 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(fixErrorCommand);
+
+    // [BARU & OPSIONAL] Daftarkan Inline Completion Provider jika diaktifkan
+    const enableInlineSuggestions = vscode.workspace.getConfiguration('coda-vscode').get<boolean>('enableInlineSuggestions');
+
+    if (enableInlineSuggestions) {
+        context.subscriptions.push(
+            vscode.languages.registerInlineCompletionItemProvider(
+                { pattern: "**" },
+                {
+                    async provideInlineCompletionItems(document, position, context, token) {
+                        const apiKey = await ensureApiKey();
+                        if (!apiKey) return;
+
+                        const editor = vscode.window.activeTextEditor;
+                        if (!editor) return;
+
+                        // Ambil teks seleksi / baris aktif
+                        const selectionRange = !editor.selection.isEmpty
+                            ? editor.selection
+                            : document.lineAt(position.line).range;
+                        const originalText = document.getText(selectionRange);
+
+                        // Jangan jalankan jika baris kosong
+                        if (originalText.trim() === '') return;
+
+                        const modelName =
+                            vscode.workspace.getConfiguration("coda-vscode").get<string>("model") ||
+                            "gemini-2.0-flash";
+                        
+                        // Panggil AI untuk memperbaiki kode
+                        const result = await fixCodeWithCoDa(apiKey, originalText, document.languageId, modelName);
+
+                        if (result.error || !result.response) {
+                            // Jangan tampilkan error, cukup batalkan secara diam-diam
+                            return;
+                        }
+
+                        try {
+                            const jsonResponse = JSON.parse(result.response || "{}");
+                            const { fixedCode, explanation } = jsonResponse;
+
+                            if (!fixedCode || fixedCode === originalText) return;
+
+                            // Biar UX makin asik, tambahin komentar penjelasan di ghost text juga
+                            const suggestion = explanation
+                                ? `${fixedCode}\n// 💡 CoDa: ${explanation}`
+                                : fixedCode;
+
+                            return [
+                                {
+                                    insertText: suggestion,
+                                    range: selectionRange, // REPLACE blok terpilih (atau baris)
+                                },
+                            ] as vscode.InlineCompletionItem[];
+                        } catch (e) {
+                            // Respons AI bukan JSON yang valid, batalkan secara diam-diam
+                            return;
+                        }
+                    },
+                }
+            )
+        );
+    }
 }
 
 export function deactivate() { }

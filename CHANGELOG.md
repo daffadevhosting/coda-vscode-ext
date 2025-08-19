@@ -4,6 +4,17 @@ All notable changes to the "coda-vscode" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.4] - 2025-08-19
+
+### Changed
+
+- **Refactored Ask CoDa Command**: Streamlined the logic for handling messages from the webview and command palette, ensuring a more consistent user experience.
+- **Standardized AI Model Configuration**: Updated `package.json` to set `gemini-2.0-flash` as the default model and refined the available model options for consistency across the extension.
+
+### Fixed
+
+- **Inline Code Suggestions Logic**: Corrected the `InlineCompletionItemProvider` to use `fixCodeWithCoDa` for code suggestions, aligning with its intended purpose for code manipulation. The feature is now optional via a new setting (`coda-vscode.enableInlineSuggestions`), handles errors silently, and ensures all AI calls use the configured model.
+
 ## [0.0.3] - 2025-08-19
 
 ### Added

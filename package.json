@@ -7,12 +7,15 @@
     "url": "https://github.com/daffadevhosting/coda-vscode-ext.git"
   },
   "description": "Your AI coding companion, CoDa.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "icon": "media/coda-icon.png",
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
+    "AI",
+    "Chat",
+    "Snippets",
     "Programming Languages",
     "Other"
   ],
@@ -56,6 +59,7 @@
           "go",
           "ruby",
           "php",
+          "json",
           "liquid",
           "jekyll",
           "html",
@@ -69,7 +73,7 @@
       "properties": {
         "coda-vscode.model": {
           "type": "string",
-          "default": "gemini-2.5-flash",
+          "default": "gemini-1.5-flash",
           "description": "Select the Google Gemini model to use for CoDa.",
           "enum": [
             "gemini-2.5-pro",
@@ -77,10 +81,14 @@
             "gemini-2.0-flash"
           ],
           "enumDescriptions": [
-            "Fastest and most cost-effective model, great for simple chat and code fixes.",
             "The most powerful and capable model, ideal for complex reasoning and code generation.",
-            "A solid and reliable previous-generation model."
+            "Fastest and most cost-effective model, great for simple chat and code fixes."
           ]
+        },
+        "coda-vscode.enableInlineSuggestions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable or disable inline code suggestions from CoDa. (Experimental)"
         }
       }
     },
